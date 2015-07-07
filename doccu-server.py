@@ -75,9 +75,17 @@ def document_fetch(name):
     except IOError:
         return redirect('/')
     title = document['title']
-    date = document['date']
+    try:
+        document['date']
+        date = document['date']
+    except KeyError:
+        date = "InActive"
     userid = document['userid'].upper()
-    renew_date = document['date-renew']
+    try:
+        document['date-renew']
+        renew_date = document['date-renew']
+    except KeyError:
+        renew_date = "InActive"
     current_date = str(time.strftime("%Y/%m/%d"))
     version = document['version']
     category = document['category']
@@ -113,6 +121,7 @@ def json_fetch(name=None):
     date = document['date']
     userid = document['userid'].upper()
     renew_date = document['date-renew']
+    current_date = str(time.strftime("%Y/%m/%d"))
     version = document['version']
     category = document['category']
     descriptor = document['descriptor'].replace('\r\n',' ').replace("'","\\'")
@@ -121,7 +130,7 @@ def json_fetch(name=None):
     for item in content:
         item = item.replace("'","\\'")
     path = request.path
-    return jsonify(title=title,date=date,renew_date=renew_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,file=name,userid=userid,path=path)
+    return jsonify(title=title,date=date,renew_date=renew_date,current_date=current_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,file=name,userid=userid,path=path)
 
 @app.route('/accessdenied')
 def access_denied():
@@ -204,8 +213,6 @@ def document_new(name):
             if identifier in value:
                 userid = key
         title = request.form['title'].strip()
-        date = request.form['date'].strip()
-        renew_date = request.form['date-renew'].strip()
         categories = request.form['category']
         category = categories.split(',')
         category = [item.strip(' ') for item in category]
@@ -217,7 +224,7 @@ def document_new(name):
         for line in proper.split('\n'):
             line = line.replace('\r','')
             content.append(line)
-        dict_to_store = {'title':title,'date':date,'date-renew':renew_date,'category':category,'descriptor':descriptor,'preamble':preamble,'content':content,'version':version,'userid':userid}
+        dict_to_store = {'title':title,'category':category,'descriptor':descriptor,'preamble':preamble,'content':content,'version':version,'userid':userid}
         doccu_docs = expanduser("~/.doccu/documents")
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
         pickle.dump(dict_to_store,open(filename,"wb"))
