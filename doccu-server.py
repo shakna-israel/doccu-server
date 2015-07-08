@@ -182,7 +182,10 @@ def document_edit(name):
 
         for key in auth_db.keys():
             if str(identifier) == str(auth_db[key]['key']):
-                userid = str(key)
+                if auth_db[key]['group'] not in ['superadmin','admin','editor']:
+                    return redirect('/accessdenied')
+                else:
+                    userid = str(key)
             else:
                 return redirect('/accessdenied')
         
