@@ -8,6 +8,8 @@ import os
 import jinja2
 import time
 import base64
+import piedown
+import re
 try:
     import cpickle
 except ImportError:
@@ -115,6 +117,13 @@ def document_fetch(name):
     content = document['content']
     content_json = document['content']
     content_json = [w.replace('"', "''") for w in content_json]
+    markdown_json = []
+    for item in content_json:
+        item = piedown.render(item)
+        item = item
+        markdown_json.append(item)
+    markdown_json = [w.replace('\n', "") for w in markdown_json]
+    content_json = markdown_json
     content_markdown = ""
     for line in document['content']:
         content_markdown = content_markdown + "\n" + line
@@ -122,7 +131,7 @@ def document_fetch(name):
     for item in content_json:
         item = item.replace("'","\\'")
     path = request.path
-    return render_template('document.html',title=title,date=date,renew_date=renew_date,current_date=current_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,descriptor_json=descriptor_json,preamble_json=preamble_json,content_json=content_json,file=name,userid=userid,path=path,content_markdown=content_markdown,logo=logo,logo_base64=logo_base64)
+    return render_template('document.html',title=title,date=date,renew_date=renew_date,current_date=current_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,descriptor_json=descriptor_json,preamble_json=preamble_json,content_json=content_json,file=name,userid=userid,path=path,content_markdown=content_markdown,logo=logo,logo_base64=logo_base64,re=re)
 
 @app.route('/accessdenied')
 def access_denied():
