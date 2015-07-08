@@ -146,8 +146,14 @@ def document_edit(name):
         except IOError:
             return redirect('/')
         title = document['title']
-        date = document['date']
-        renew_date = document['date-renew']
+        try:
+            date = document['date']
+        except KeyError:
+            date = "Inactive"
+        try:
+            renew_date = document['date-renew']
+        except KeyError:
+            renew_date = "InActive"
         category = document['category']
         categories = ""
         for item in category:
@@ -190,7 +196,7 @@ def document_edit(name):
             line = line.replace('\r','')
             content.append(line)
         dict_to_store = {'title':title,'date':date,'date-renew':renew_date,'category':category,'descriptor':descriptor,'preamble':preamble,'content':content,'version':version,'userid':userid}
-        filename = doccu_docs + "documents/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
+        filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
         pickle.dump(dict_to_store,open(filename,"wb"))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
         return render_template('new_document_submitted.html',filename=str(filename),title=title)
