@@ -15,8 +15,12 @@ try:
 except ImportError:
     import pickle
 
-doccu_static = expanduser('~/.doccu/static')
-doccu_templates = expanduser('~/.doccu/templates')
+if os.getenv('Doccu', 'Development') == 'Production':
+    doccu_static = expanduser('~/.doccu/static')
+    doccu_templates = expanduser('~/.doccu/templates')
+else:
+    doccu_static = expanduser('~/.doccu/static')
+    doccu_templates = expanduser('~/doccu-templates')
 app = Flask(__name__,static_folder=doccu_static)
 
 template_loader = jinja2.ChoiceLoader([
