@@ -69,7 +69,14 @@ def show_category(name):
 @app.route("/document/<name>/")
 def document_fetch(name):
     doccu_docs = expanduser("~/.doccu/documents")
+    doccu_img = expanduser("~/.doccu/static/img")
     document_name = doccu_docs + "/" + str(name) + ".db"
+    if os.path.exists(doccu_img + "/logo.jpg"):
+        logo = doccu_img + "/logo.jpg")
+    elif os.path.exists(doccu_img + "/logo.png"):
+        logo = doccu_img + "/logo.png")
+    else:
+        logo = False
     try:
         document = pickle.load(open(document_name, "rb"))
     except IOError:
@@ -105,7 +112,7 @@ def document_fetch(name):
     for item in content_json:
         item = item.replace("'","\\'")
     path = request.path
-    return render_template('document.html',title=title,date=date,renew_date=renew_date,current_date=current_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,descriptor_json=descriptor_json,preamble_json=preamble_json,content_json=content_json,file=name,userid=userid,path=path,content_markdown=content_markdown)
+    return render_template('document.html',title=title,date=date,renew_date=renew_date,current_date=current_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,descriptor_json=descriptor_json,preamble_json=preamble_json,content_json=content_json,file=name,userid=userid,path=path,content_markdown=content_markdown,logo=logo)
 
 @app.route("/document/<name>/json/")
 def json_fetch(name=None):
