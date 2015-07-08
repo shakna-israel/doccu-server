@@ -116,7 +116,7 @@ def document_fetch(name):
     descriptor = markdown.markdown(descriptor)
     descriptor_json = document['descriptor'].replace('\r\n',' ').replace("'","\\'")
     preamble = document['preamble'].replace('\r\n',' ')
-    premable = markdown.markdown(preamble)
+    preamble = markdown.markdown(preamble)
     preamble_json = document['preamble'].replace('\r\n',' ').replace("'","\\'")
     content = document['content']
     content_json = document['content']
