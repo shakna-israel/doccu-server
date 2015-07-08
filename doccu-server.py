@@ -4,8 +4,10 @@ import glob
 import logging
 import markdown
 from os.path import expanduser
+import os
 import jinja2
 import time
+import base64
 try:
     import cpickle
 except ImportError:
@@ -72,11 +74,19 @@ def document_fetch(name):
     doccu_img = expanduser("~/.doccu/static/img")
     document_name = doccu_docs + "/" + str(name) + ".db"
     if os.path.exists(doccu_img + "/logo.jpg"):
-        logo = doccu_img + "/logo.jpg")
+        logo = "/static/img/logo.jpg"
+        logo_path = doccu_img + "/logo.jpg"
     elif os.path.exists(doccu_img + "/logo.png"):
-        logo = doccu_img + "/logo.png")
+        logo = "/static/img/logo.png"
+        logo_path = doccu_img + "/logo.png"
     else:
         logo = False
+    if logo:
+        with open(logo_path, 'rb') as logo_file:
+            logo_base64 = base64.b64encode(logo_file.read())
+            logo_file.close()
+    else:
+        logo_base64 = False
     try:
         document = pickle.load(open(document_name, "rb"))
     except IOError:
@@ -112,32 +122,7 @@ def document_fetch(name):
     for item in content_json:
         item = item.replace("'","\\'")
     path = request.path
-    return render_template('document.html',title=title,date=date,renew_date=renew_date,current_date=current_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,descriptor_json=descriptor_json,preamble_json=preamble_json,content_json=content_json,file=name,userid=userid,path=path,content_markdown=content_markdown,logo=logo)
-
-@app.route("/document/<name>/json/")
-def json_fetch(name=None):
-    doccu_docs = expanduser("~/.doccu/documents")
-    if name == 'new':
-        redirect('/')
-    document_name = doccu_docs + "/" + str(name) + ".db"
-    try:
-        document = pickle.load(open(document_name, "rb"))
-    except IOError:
-        return redirect('/')
-    title = document['title']
-    date = document['date']
-    userid = document['userid'].upper()
-    renew_date = document['date-renew']
-    current_date = str(time.strftime("%Y/%m/%d"))
-    version = document['version']
-    category = document['category']
-    descriptor = document['descriptor'].replace('\r\n',' ').replace("'","\\'")
-    preamble = document['preamble'].replace('\r\n',' ').replace("'","\\'")
-    content = document['content']
-    for item in content:
-        item = item.replace("'","\\'")
-    path = request.path
-    return jsonify(title=title,date=date,renew_date=renew_date,current_date=current_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,file=name,userid=userid,path=path)
+    return render_template('document.html',title=title,date=date,renew_date=renew_date,current_date=current_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,descriptor_json=descriptor_json,preamble_json=preamble_json,content_json=content_json,file=name,userid=userid,path=path,content_markdown=content_markdown,logo=logo,logo_base64=logo_base64)
 
 @app.route('/accessdenied')
 def access_denied():
