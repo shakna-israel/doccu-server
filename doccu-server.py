@@ -179,13 +179,13 @@ def document_edit(name):
         title = title.replace("_"," ")
         identifier = request.form['identifier']
         auth_db = pickle.load(open(doccu_home + "/ids.dbs", "rb"))
-        if identifier not in auth_db.values():
-            return redirect('/accessdenied')
-        if str(identifier) == '000000':
-            return redirect('/accessdenied')
-        for key, value in auth_db.items():
-            if identifier in value:
-                userid = key
+
+        for key in auth_db.keys():
+            if str(identifier) == str(auth_db[key]['key']):
+                userid = str(key)
+            else:
+                return redirect('/accessdenied')
+        
         date = request.form['date'].strip()
         renew_date = request.form['date-renew'].strip()
         categories = request.form['category']
@@ -216,13 +216,13 @@ def document_new(name):
         doccu_home = expanduser('~/.doccu')
         identifier = request.form['identifier']
         auth_db = pickle.load(open(doccu_home + "/ids.dbs", "rb"))
-        if identifier not in auth_db.values():
-            return redirect('/accessdenied')
-        if str(identifier) == '000000':
-            return redirect('/accessdenied')
-        for key, value in auth_db.items():
-            if identifier in value:
-                userid = key
+
+        for key in auth_db.keys():
+            if str(identifier) == str(auth_db[key]['key']):
+                userid = str(key)
+            else:
+                return redirect('/accessdenied')
+
         title = request.form['title'].strip()
         categories = request.form['category']
         category = categories.split(',')
