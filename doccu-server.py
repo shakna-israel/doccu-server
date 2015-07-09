@@ -193,8 +193,8 @@ def document_edit(name):
         except NameError:
             return redirect('/accessdenied')
         
-        date = request.form['date'].strip()
-        renew_date = request.form['date-renew'].strip()
+        date = 'InActive'
+        renew_date = 'InActive'
         categories = request.form['category']
         category = categories.split(',')
         category = [item.strip(' ') for item in category]
@@ -207,6 +207,65 @@ def document_edit(name):
         for line in proper.split('\n'):
             line = line.replace('\r','')
             content.append(line)
+        dict_to_store = {'title':title,'date':date,'date-renew':renew_date,'category':category,'descriptor':descriptor,'preamble':preamble,'content':content,'version':version,'userid':userid}
+        filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
+        pickle.dump(dict_to_store,open(filename,"wb"))
+        filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
+        return render_template('new_document_submitted.html',filename=str(filename),title=title)
+
+@app.route("/document/<name>/approve/", methods=['GET','POST'])
+def document_approve(name):
+    if request.method == 'GET':
+        doccu_docs = expanduser("~/.doccu/documents")
+        document_name = doccu_docs + "/" + str(name) + ".db"
+        try:
+            document = pickle.load(open(document_name, "rb"))
+        except IOError:
+            return redirect('/')
+        title = document['title']
+        try:
+            date = document['date']
+        except KeyError:
+            date = "InActive"
+        try:
+            renew_date = document['date-renew']
+        except KeyError:
+            renew_date = "InActive"
+        version = str(name).split('.')[0]
+        return render_template('approve_document.html',title=name,date=date,renew_date=renew_date,version=version)
+    if request.method == 'POST':
+        doccu_home = expanduser('~/.doccu')
+        doccu_docs = expanduser('~/.doccu/documents')
+        document_name = doccu_docs + "/" + str(name) + ".db"
+        try:
+            document = pickle.load(open(document_name, "rb"))
+        except IOError:
+            return redirect('/')
+        title = name
+        title = title.split('.')[-1]
+        title = title.replace("_"," ")
+        identifier = request.form['identifier']
+        auth_db = pickle.load(open(doccu_home + "/ids.dbs", "rb"))
+        for key in auth_db.keys():
+            if str(identifier) == str(auth_db[key]['key']):
+                if auth_db[key]['group'] == 'superadmin':
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
+                elif auth_db[key]['group'] == 'admin':
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
+                elif auth_db[key]['group'] == 'editor':
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
+        try:
+            userid
+        except NameError:
+            return redirect('/accessdenied')
+        date = request.form['date'].strip()
+        renew_date = request.form['date-renew'].strip()
+        category = document['category']
+        descriptor = document['descriptor']
+        preamble = document['preamble']
+        content = document['content']
+        version = request.form['version']
+        version = str(int(version) + 1)
         dict_to_store = {'title':title,'date':date,'date-renew':renew_date,'category':category,'descriptor':descriptor,'preamble':preamble,'content':content,'version':version,'userid':userid}
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
         pickle.dump(dict_to_store,open(filename,"wb"))
