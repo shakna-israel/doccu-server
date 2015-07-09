@@ -253,6 +253,10 @@ def document_approve(name):
                 elif auth_db[key]['group'] == 'admin':
                     userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
         try:
+            document['userid']
+            if userid not in document['userid']:
+                userid = userid + '\n' + document['userid']
+        try:
             userid
         except NameError:
             return redirect('/accessdenied')
