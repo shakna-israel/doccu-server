@@ -154,7 +154,7 @@ def document_edit(name):
         try:
             date = document['date']
         except KeyError:
-            date = "Inactive"
+            date = "InActive"
         try:
             renew_date = document['date-renew']
         except KeyError:
@@ -183,11 +183,11 @@ def document_edit(name):
         for key in auth_db.keys():
             if str(identifier) == str(auth_db[key]['key']):
                 if auth_db[key]['group'] == 'superadmin':
-                    userid = str(key) + ', ' + str(auth_db[key]['group'])
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
                 elif auth_db[key]['group'] == 'admin':
-                    userid = str(key) + ', ' + str(auth_db[key]['group'])
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
                 elif auth_db[key]['group'] == 'editor':
-                    userid = str(key) + ', ' + str(auth_db[key]['group'])
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
         try:
             userid
         except NameError:
