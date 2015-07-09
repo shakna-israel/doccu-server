@@ -182,12 +182,16 @@ def document_edit(name):
 
         for key in auth_db.keys():
             if str(identifier) == str(auth_db[key]['key']):
-                if auth_db[key]['group'] not in ['superadmin','admin','editor']:
-                    return redirect('/accessdenied')
-                else:
-                    userid = str(key)
-            else:
-                return redirect('/accessdenied')
+                if auth_db[key]['group'] == 'superadmin':
+                    userid = str(key) + ', ' + str(auth_db[key]['group'])
+                elif auth_db[key]['group'] == 'admin':
+                    userid = str(key) + ', ' + str(auth_db[key]['group'])
+                elif auth_db[key]['group'] == 'editor':
+                    userid = str(key) + ', ' + str(auth_db[key]['group'])
+        try:
+            userid
+        except NameError:
+            return redirect('/accessdenied')
         
         date = request.form['date'].strip()
         renew_date = request.form['date-renew'].strip()
