@@ -11,6 +11,7 @@ import base64
 import piedown
 import re
 import sendmail
+from lib import get_ip_address
 try:
     import cpickle
 except ImportError:
@@ -77,9 +78,16 @@ def show_category(name):
 
 @app.route("/document/<name>/")
 def document_fetch(name):
-    doccu_docs = expanduser("~/.doccu/documents")
+    doccu_docs = expanduser('~/.doccu/documents')
     doccu_img = expanduser("~/.doccu/static/img")
     document_name = doccu_docs + "/" + str(name) + ".db"
+    unversioned_name = name.split('.', 1)[-1]
+    old_versions_docs = sorted(glob.glob(doccu_docs + '/*' + unversioned_name + '*.db'))
+    old_versions = {}
+    for item in old_versions_docs:
+        ver = 'v' + item.replace(doccu_docs + '/',"").replace('.db','').split('.',1)[0]
+        path = '/document/' + item.replace(".db","").replace(doccu_docs + '/',"")
+        old_versions[item] = {'ver':ver,'path':path}
     if os.path.exists(doccu_img + "/logo.jpg"):
         logo = "/static/img/logo.jpg"
         logo_path = doccu_img + "/logo.jpg"
@@ -136,7 +144,7 @@ def document_fetch(name):
     for item in content_json:
         item = item.replace("'","\\'")
     path = request.path
-    return render_template('document.html',title=title,date=date,renew_date=renew_date,current_date=current_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,descriptor_json=descriptor_json,preamble_json=preamble_json,content_json=content_json,file=name,userid=userid,path=path,content_markdown=content_markdown,logo=logo,logo_base64=logo_base64,re=re)
+    return render_template('document.html',title=title,date=date,renew_date=renew_date,current_date=current_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,descriptor_json=descriptor_json,preamble_json=preamble_json,content_json=content_json,file=name,userid=userid,path=path,content_markdown=content_markdown,logo=logo,logo_base64=logo_base64,re=re,old_versions=old_versions,reversed=reversed)
 
 @app.route('/accessdenied')
 def access_denied():
@@ -220,12 +228,12 @@ def document_edit(name):
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
         pickle.dump(dict_to_store,open(filename,"wb"))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
-
+        ip_address = get_ip_address()
         for key in auth_db.keys():
             if str(auth_db[key]['group']) == 'admin':
-                sendmail.send_email(str(auth_db[key]['email']),str(auth_db[key]),'Edited Document awaiting approval: [Title](/document/' + name + ')')
+                sendmail.send_email(str(auth_db[key]['email']),str(key).upper(),'Edited Document awaiting approval: [' + name + '](http://' + ip_address + '/document/' + name + ')')
             elif str(auth_db[key]['group']) == 'superadmin':
-                sendmail.send_email(str(auth_db[key]['email']),str(auth_db[key]),'Edited Document awaiting approval: [Title](/document/' + name + ')')
+                sendmail.send_email(str(auth_db[key]['email']),str(key).upper(),'Edited Document awaiting approval: [' + name + '](http://' + ip_address + '/document/' + name + ')')
         return render_template('new_document_submitted.html',filename=str(filename),title=title)
 
 @app.route("/document/<name>/approve/", methods=['GET','POST'])
@@ -333,11 +341,12 @@ def document_new(name):
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
         pickle.dump(dict_to_store,open(filename,"wb"))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
+        ip_address = get_ip_address()
         for key in auth_db.keys():
             if str(auth_db[key]['group']) == 'admin':
-                sendmail.send_email(str(auth_db[key]['email']),str(auth_db[key]),'New Document awaiting approval: [Title](/document/' + name + ')')
+                sendmail.send_email(str(auth_db[key]['email']),str(key).upper(),'New Document awaiting approval: [' + name + '](http://' + ip_address + '/document/' + name + ')')
             elif str(auth_db[key]['group']) == 'superadmin':
-                sendmail.send_email(str(auth_db[key]['email']),str(auth_db[key]),'New Document awaiting approval: [Title](/document/' + name + ')')
+                sendmail.send_email(str(auth_db[key]['email']),str(key).upper(),'New Document awaiting approval: [' + name + '](http://' + ip_address + '/document/' + name + ')')
         return render_template('new_document_submitted.html',title=title,filename=str(filename))
 
 if __name__ == "__main__":
