@@ -10,6 +10,7 @@ import time
 import base64
 import piedown
 import re
+import sendmail
 try:
     import cpickle
 except ImportError:
@@ -219,6 +220,12 @@ def document_edit(name):
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
         pickle.dump(dict_to_store,open(filename,"wb"))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
+
+        for key in auth_db.keys():
+            if str(auth_db[key]['group']) == 'admin':
+                sendmail.send_email(str(auth_db[key]['email']),str(auth_db[key]),'Edited Document awaiting approval: [Title](/document/' + name + ')')
+            elif str(auth_db[key]['group']) == 'superadmin':
+                sendmail.send_email(str(auth_db[key]['email']),str(auth_db[key]),'Edited Document awaiting approval: [Title](/document/' + name + ')')
         return render_template('new_document_submitted.html',filename=str(filename),title=title)
 
 @app.route("/document/<name>/approve/", methods=['GET','POST'])
@@ -300,9 +307,14 @@ def document_new(name):
 
         for key in auth_db.keys():
             if str(identifier) == str(auth_db[key]['key']):
-                userid = str(key)
-            else:
-                return redirect('/accessdenied')
+                if auth_db[key]['group'] == 'superadmin':
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
+                elif auth_db[key]['group'] == 'admin':
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
+        try:
+            userid
+        except NameError:
+            return redirect('/accessdenied')
 
         title = request.form['title'].strip()
         categories = request.form['category']
@@ -321,7 +333,11 @@ def document_new(name):
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
         pickle.dump(dict_to_store,open(filename,"wb"))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
-        print(filename)
+        for key in auth_db.keys():
+            if str(auth_db[key]['group']) == 'admin':
+                sendmail.send_email(str(auth_db[key]['email']),str(auth_db[key]),'New Document awaiting approval: [Title](/document/' + name + ')')
+            elif str(auth_db[key]['group']) == 'superadmin':
+                sendmail.send_email(str(auth_db[key]['email']),str(auth_db[key]),'New Document awaiting approval: [Title](/document/' + name + ')')
         return render_template('new_document_submitted.html',title=title,filename=str(filename))
 
 if __name__ == "__main__":
