@@ -189,10 +189,18 @@ def document_edit(name):
                 elif auth_db[key]['group'] == 'editor':
                     userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
         try:
+            document['userid']
+            if userid not in document['userid']:
+                userid = userid + ',' + document['userid']
+        except NameError:
+            try:
+                userid = userid
+            except NameError:
+                return redirect('/accessdenied')
+        try:
             userid
         except NameError:
             return redirect('/accessdenied')
-        
         date = 'InActive'
         renew_date = 'InActive'
         categories = request.form['category']
@@ -255,7 +263,12 @@ def document_approve(name):
         try:
             document['userid']
             if userid not in document['userid']:
-                userid = userid + '\n' + document['userid']
+                userid = userid + ',' + document['userid']
+        except NameError:
+            try:
+                userid = userid
+            except NameError:
+                return redirect('/accessdenied')
         try:
             userid
         except NameError:
