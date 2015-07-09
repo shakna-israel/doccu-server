@@ -252,8 +252,6 @@ def document_approve(name):
                     userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
                 elif auth_db[key]['group'] == 'admin':
                     userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
-                elif auth_db[key]['group'] == 'editor':
-                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
         try:
             userid
         except NameError:
