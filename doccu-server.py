@@ -144,7 +144,7 @@ def document_fetch(name):
     for item in content_json:
         item = item.replace("'","\\'")
     path = request.path
-    return render_template('document.html',title=title,date=date,renew_date=renew_date,current_date=current_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,descriptor_json=descriptor_json,preamble_json=preamble_json,content_json=content_json,file=name,userid=userid,path=path,content_markdown=content_markdown,logo=logo,logo_base64=logo_base64,re=re,old_versions=old_versions,reversed=reversed)
+    return render_template('document.html',title=title,date=date,renew_date=renew_date,current_date=current_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,descriptor_json=descriptor_json,preamble_json=preamble_json,content_json=content_json,file=name,userid=userid,path=path,content_markdown=content_markdown,logo=logo,logo_base64=logo_base64,re=re,old_versions=old_versions,reversed=reversed,sorted=sorted)
 
 @app.route('/accessdenied')
 def access_denied():
@@ -179,7 +179,7 @@ def document_edit(name):
         content_html = ""
         for item in content:
             content_html = content_html + item + "\n"
-        return render_template('edit_document.html',title=name,date=date,renew_date=renew_date,category=categories,descriptor=descriptor,preamble=preamble,content=content_html,version=version)
+        return render_template('edit_document.html',title=name,date=date,renew_date=renew_date,category=categories,descriptor=descriptor,preamble=preamble,content=content_html,version=version,old_versions=False)
     if request.method == 'POST':
         doccu_home = expanduser('~/.doccu')
         doccu_docs = expanduser('~/.doccu/documents')
@@ -234,7 +234,7 @@ def document_edit(name):
                 sendmail.send_email(str(auth_db[key]['email']),str(key).upper(),'Edited Document awaiting approval: [' + name + '](http://' + ip_address + '/document/' + name + ')')
             elif str(auth_db[key]['group']) == 'superadmin':
                 sendmail.send_email(str(auth_db[key]['email']),str(key).upper(),'Edited Document awaiting approval: [' + name + '](http://' + ip_address + '/document/' + name + ')')
-        return render_template('new_document_submitted.html',filename=str(filename),title=title)
+        return render_template('new_document_submitted.html',filename=str(filename),title=title, old_versions=False)
 
 @app.route("/document/<name>/approve/", methods=['GET','POST'])
 def document_approve(name):
@@ -255,7 +255,7 @@ def document_approve(name):
         except KeyError:
             renew_date = "InActive"
         version = str(name).split('.')[0]
-        return render_template('approve_document.html',title=name,date=date,renew_date=renew_date,version=version)
+        return render_template('approve_document.html',title=name,date=date,renew_date=renew_date,version=version,old_versions=False)
     if request.method == 'POST':
         doccu_home = expanduser('~/.doccu')
         doccu_docs = expanduser('~/.doccu/documents')
@@ -300,14 +300,14 @@ def document_approve(name):
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
         pickle.dump(dict_to_store,open(filename,"wb"))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
-        return render_template('new_document_submitted.html',filename=str(filename),title=title)
+        return render_template('new_document_submitted.html',filename=str(filename),title=title,old_versions=False)
 
 @app.route("/document/new/<name>/", methods=['GET','POST'])
 def document_new(name):
     if request.method == 'GET':
         if name == 'json':
             return redirect('/')
-        return render_template('new_document.html',title="New Document")
+        return render_template('new_document.html',title="New Document",old_versions=False)
     if request.method == 'POST':
         doccu_home = expanduser('~/.doccu')
         identifier = request.form['identifier']
@@ -347,7 +347,7 @@ def document_new(name):
                 sendmail.send_email(str(auth_db[key]['email']),str(key).upper(),'New Document awaiting approval: [' + name + '](http://' + ip_address + '/document/' + name + ')')
             elif str(auth_db[key]['group']) == 'superadmin':
                 sendmail.send_email(str(auth_db[key]['email']),str(key).upper(),'New Document awaiting approval: [' + name + '](http://' + ip_address + '/document/' + name + ')')
-        return render_template('new_document_submitted.html',title=title,filename=str(filename))
+        return render_template('new_document_submitted.html',title=title,filename=str(filename),old_versions=False)
 
 if __name__ == "__main__":
     logging.basicConfig(filename='error.log',level=logging.DEBUG)
