@@ -191,7 +191,7 @@ def document_edit(name):
         try:
             document['userid']
             if userid not in document['userid']:
-                userid = userid + ',' + document['userid']
+                userid = userid + ', ' + document['userid']
         except NameError:
             try:
                 userid = userid
@@ -263,7 +263,7 @@ def document_approve(name):
         try:
             document['userid']
             if userid not in document['userid']:
-                userid = userid + ',' + document['userid']
+                userid = userid + ', ' + document['userid']
         except NameError:
             try:
                 userid = userid
