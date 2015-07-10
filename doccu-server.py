@@ -67,12 +67,20 @@ def search():
         category = request.form['category']
         title = request.form['title']
         author = request.form['author']
-        categories_found = search_categories(category)
-        titles_found = search_titles(title)
+        search_for_categories = search_categories(category)
+        categories_found = search_for_categories['found']
+        search_categories_list = search_for_categories['search']
+        for item in search_categories_list:
+            try:
+                searched_categories = str(item).upper() + ', ' + searched_categories
+            except UnboundLocalError:
+                searched_categories = str(item).upper()
+        titles_found = search_titles(title)['found']
+        titles_search = search_titles(title)['search'].upper()
         authors_found = search_authors(author)['found']
-        search_author = search_authors(author)['search']
+        search_author = search_authors(author)['search'].upper()
 
-        return render_template('search_out.html',categories=categories_found,titles_found=titles_found,authors_found=authors_found,search_author=search_author,title="Search")
+        return render_template('search_out.html',categories=categories_found,categories_search=searched_categories,titles_found=titles_found,titles_search=titles_search,authors_found=authors_found,search_author=search_author,title="Search")
 
 def search_categories(category):
     if category == '':
@@ -99,7 +107,7 @@ def search_categories(category):
                         categories_found[item] = item
     except TypeError:
         categories_found = False
-    return categories_found
+    return {'found':categories_found,'search':categories}
 
 def search_titles(title):
     if title == '':
@@ -114,7 +122,7 @@ def search_titles(title):
                 titles_found[document['title']] = { 'title': document['title'], 'version': document['version'] }
         except AttributeError:
             titles_found = False
-    return titles_found
+    return {'found':titles_found,'search':title}
 
 def search_authors(author):
     if author == '':
