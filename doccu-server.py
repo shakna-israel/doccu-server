@@ -59,6 +59,41 @@ def home(name="None"):
     else:
         return render_template('index.html',policies=policy,categories=categories,title="Home")
 
+@app.route("/search/", methods=['GET','POST'])
+def search():
+    if request.method == 'GET':
+        return render_template('search.html')
+    if request.method == 'POST':
+        category = request.form['category']
+        if category == '':
+            category = False
+        try:
+            categories = category.split(",")
+        except AttributeError:
+            categories = False
+        try:
+            for category in categories:
+                category = category.strip()
+        except TypeError:
+            categories = False
+        title = request.form['title']
+        author = request.form['author']
+
+        doccu_docs = expanduser("~/.doccu/documents")
+        databases = glob.glob(doccu_docs + '/*.db')
+        categories_found = {}
+        try:
+            for category in categories:
+                for database in databases:
+                    document = pickle.load(open(database, "rb"))
+                    for item in document['category']:
+                        if category.lower() in item.lower():
+                            categories_found[item] = item
+        except TypeError:
+            categories_found = False
+        return render_template('search_out.html',categories=categories_found,title="Search")
+
+
 @app.route("/category/<name>/")
 def show_category(name):
     doccu_docs = expanduser("~/.doccu/documents")
