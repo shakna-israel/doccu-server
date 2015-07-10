@@ -10,6 +10,8 @@ import time
 import base64
 import piedown
 import re
+import sendmail
+from lib import get_ip_address
 try:
     import cpickle
 except ImportError:
@@ -57,6 +59,124 @@ def home(name="None"):
     else:
         return render_template('index.html',policies=policy,categories=categories,title="Home")
 
+@app.route("/search/", methods=['GET','POST'])
+def search():
+    if request.method == 'GET':
+        return render_template('get_search.html',title='Search')
+    if request.method == 'POST':
+        category = request.form['category']
+        title = request.form['title']
+        author = request.form['author']
+        search_for_categories = search_categories(category)
+        categories_found = search_for_categories['found']
+        search_categories_list = search_for_categories['search']
+        try:
+            for item in search_categories_list:
+                try:
+                    searched_categories = str(item).upper() + ', ' + searched_categories
+                except UnboundLocalError:
+                    searched_categories = str(item).upper()
+        except TypeError:
+            search_categories_list = False
+            searched_categories = False
+        titles_found = search_titles(title)['found']
+        try:
+            titles_search = search_titles(title)['search'].upper()
+        except AttributeError:
+            titles_search = False
+        authors_found = search_authors(author)['found']
+        try:
+            search_author = search_authors(author)['search'].upper()
+        except AttributeError:
+            search_author = False
+
+        if (author and category and title):
+            both_titles_and_authors = False
+            author_and_category = False
+            category_and_title = False
+            triple_filter = { 'list':list(set(titles_found).intersection(authors_found)), 'category':category}
+        elif (author and title):
+            both_titles_and_authors = list(set(titles_found).intersection(authors_found))
+            author_and_category = False
+            category_and_title = False
+            triple_filter = False           
+        elif (category and title):
+            both_titles_and_authors = False
+            author_and_category = False
+            category_and_title = True
+            triple_filter = False
+            print("Not Yet Implemented")
+
+        elif (author and category):
+            both_titles_and_authors = False
+            author_and_category = { 'list': authors_found, 'category': category}
+            category_and_title = False
+            triple_filter = False            
+        else:
+            both_titles_and_authors = False
+            author_and_category = False
+            category_and_title = False
+            triple_filter = False
+
+        return render_template('search_out.html',categories=categories_found,categories_search=searched_categories,titles_found=titles_found,titles_search=titles_search,authors_found=authors_found,search_author=search_author,title="Search",both_titles_and_authors=both_titles_and_authors,triple_filter=triple_filter,author_and_category=author_and_category)
+
+def search_categories(category):
+    if category == '':
+        category = False
+    try:
+        categories = category.split(",")
+    except AttributeError:
+        categories = False
+    try:
+        for category in categories:
+            category = category.strip()
+    except TypeError:
+        categories = False
+
+    doccu_docs = expanduser("~/.doccu/documents")
+    databases = glob.glob(doccu_docs + '/*.db')
+    categories_found = {}
+    try:
+        for category in categories:
+            for database in databases:
+                document = pickle.load(open(database, "rb"))
+                for item in document['category']:
+                    if category.lower() in item.lower():
+                        categories_found[item] = item
+    except TypeError:
+        categories_found = False
+    return {'found':categories_found,'search':categories}
+
+def search_titles(title):
+    if title == '':
+        title = False
+    doccu_docs = expanduser("~/.doccu/documents")
+    databases = glob.glob(doccu_docs + '/*.db')
+    titles_found = {}
+    for database in databases:
+        document = pickle.load(open(database, "rb"))
+        try:
+            if title.lower() in document['title'].lower():
+                titles_found[document['title']] = { 'title': document['title'], 'version': document['version'], 'category': document['category'] }
+        except AttributeError:
+            titles_found = False
+    return {'found':titles_found,'search':title}
+
+def search_authors(author):
+    if author == '':
+        author = False
+    doccu_docs = expanduser("~/.doccu/documents")
+    databases = glob.glob(doccu_docs + '/*.db')
+    authors_found = {}
+    for database in databases:
+        document = pickle.load(open(database, "rb"))
+        try:
+            if author.lower() in document['userid'].lower():
+                authors_found[document['title']] = { 'title': document['title'], 'version': document['version'], 'category': document['category'] }
+        except AttributeError:
+            authors_found = False
+    return {'found':authors_found,'search':author}
+
 @app.route("/category/<name>/")
 def show_category(name):
     doccu_docs = expanduser("~/.doccu/documents")
@@ -76,9 +196,16 @@ def show_category(name):
 
 @app.route("/document/<name>/")
 def document_fetch(name):
-    doccu_docs = expanduser("~/.doccu/documents")
+    doccu_docs = expanduser('~/.doccu/documents')
     doccu_img = expanduser("~/.doccu/static/img")
     document_name = doccu_docs + "/" + str(name) + ".db"
+    unversioned_name = name.split('.', 1)[-1]
+    old_versions_docs = sorted(glob.glob(doccu_docs + '/*' + unversioned_name + '*.db'))
+    old_versions = {}
+    for item in old_versions_docs:
+        ver = 'v' + item.replace(doccu_docs + '/',"").replace('.db','').split('.',1)[0]
+        path = '/document/' + item.replace(".db","").replace(doccu_docs + '/',"")
+        old_versions[item] = {'ver':ver,'path':path}
     if os.path.exists(doccu_img + "/logo.jpg"):
         logo = "/static/img/logo.jpg"
         logo_path = doccu_img + "/logo.jpg"
@@ -135,7 +262,7 @@ def document_fetch(name):
     for item in content_json:
         item = item.replace("'","\\'")
     path = request.path
-    return render_template('document.html',title=title,date=date,renew_date=renew_date,current_date=current_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,descriptor_json=descriptor_json,preamble_json=preamble_json,content_json=content_json,file=name,userid=userid,path=path,content_markdown=content_markdown,logo=logo,logo_base64=logo_base64,re=re)
+    return render_template('document.html',title=title,date=date,renew_date=renew_date,current_date=current_date,version=version,category=category,content=content,descriptor=descriptor,preamble=preamble,descriptor_json=descriptor_json,preamble_json=preamble_json,content_json=content_json,file=name,userid=userid,path=path,content_markdown=content_markdown,logo=logo,logo_base64=logo_base64,re=re,old_versions=old_versions,reversed=reversed,sorted=sorted,open=open,base64=base64,expanduser=expanduser)
 
 @app.route('/accessdenied')
 def access_denied():
@@ -154,7 +281,7 @@ def document_edit(name):
         try:
             date = document['date']
         except KeyError:
-            date = "Inactive"
+            date = "InActive"
         try:
             renew_date = document['date-renew']
         except KeyError:
@@ -170,7 +297,7 @@ def document_edit(name):
         content_html = ""
         for item in content:
             content_html = content_html + item + "\n"
-        return render_template('edit_document.html',title=name,date=date,renew_date=renew_date,category=categories,descriptor=descriptor,preamble=preamble,content=content_html,version=version)
+        return render_template('edit_document.html',title=name,date=date,renew_date=renew_date,category=categories,descriptor=descriptor,preamble=preamble,content=content_html,version=version,old_versions=False)
     if request.method == 'POST':
         doccu_home = expanduser('~/.doccu')
         doccu_docs = expanduser('~/.doccu/documents')
@@ -179,15 +306,30 @@ def document_edit(name):
         title = title.replace("_"," ")
         identifier = request.form['identifier']
         auth_db = pickle.load(open(doccu_home + "/ids.dbs", "rb"))
-        if identifier not in auth_db.values():
+
+        for key in auth_db.keys():
+            if str(identifier) == str(auth_db[key]['key']):
+                if auth_db[key]['group'] == 'superadmin':
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
+                elif auth_db[key]['group'] == 'admin':
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
+                elif auth_db[key]['group'] == 'editor':
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
+        try:
+            document['userid']
+            if userid not in document['userid']:
+                userid = userid + ', ' + document['userid']
+        except NameError:
+            try:
+                userid = userid
+            except NameError:
+                return redirect('/accessdenied')
+        try:
+            userid
+        except NameError:
             return redirect('/accessdenied')
-        if str(identifier) == '000000':
-            return redirect('/accessdenied')
-        for key, value in auth_db.items():
-            if identifier in value:
-                userid = key
-        date = request.form['date'].strip()
-        renew_date = request.form['date-renew'].strip()
+        date = 'InActive'
+        renew_date = 'InActive'
         categories = request.form['category']
         category = categories.split(',')
         category = [item.strip(' ') for item in category]
@@ -204,25 +346,102 @@ def document_edit(name):
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
         pickle.dump(dict_to_store,open(filename,"wb"))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
-        return render_template('new_document_submitted.html',filename=str(filename),title=title)
+        ip_address = get_ip_address()
+        for key in auth_db.keys():
+            if str(auth_db[key]['group']) == 'admin':
+                sendmail.send_email(str(auth_db[key]['email']),str(key).upper(),'Edited Document awaiting approval: [' + name + '](http://' + ip_address + '/document/' + name + ')')
+            elif str(auth_db[key]['group']) == 'superadmin':
+                sendmail.send_email(str(auth_db[key]['email']),str(key).upper(),'Edited Document awaiting approval: [' + name + '](http://' + ip_address + '/document/' + name + ')')
+        return render_template('new_document_submitted.html',filename=str(filename),title=title, old_versions=False)
+
+@app.route("/document/<name>/approve/", methods=['GET','POST'])
+def document_approve(name):
+    if request.method == 'GET':
+        doccu_docs = expanduser("~/.doccu/documents")
+        document_name = doccu_docs + "/" + str(name) + ".db"
+        try:
+            document = pickle.load(open(document_name, "rb"))
+        except IOError:
+            return redirect('/')
+        title = document['title']
+        try:
+            date = document['date']
+        except KeyError:
+            date = "InActive"
+        try:
+            renew_date = document['date-renew']
+        except KeyError:
+            renew_date = "InActive"
+        version = str(name).split('.')[0]
+        return render_template('approve_document.html',title=name,date=date,renew_date=renew_date,version=version,old_versions=False)
+    if request.method == 'POST':
+        doccu_home = expanduser('~/.doccu')
+        doccu_docs = expanduser('~/.doccu/documents')
+        document_name = doccu_docs + "/" + str(name) + ".db"
+        try:
+            document = pickle.load(open(document_name, "rb"))
+        except IOError:
+            return redirect('/')
+        title = name
+        title = title.split('.')[-1]
+        title = title.replace("_"," ")
+        identifier = request.form['identifier']
+        auth_db = pickle.load(open(doccu_home + "/ids.dbs", "rb"))
+        for key in auth_db.keys():
+            if str(identifier) == str(auth_db[key]['key']):
+                if auth_db[key]['group'] == 'superadmin':
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
+                elif auth_db[key]['group'] == 'admin':
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
+        try:
+            document['userid']
+            if userid not in document['userid']:
+                userid = userid + ', ' + document['userid']
+        except NameError:
+            try:
+                userid = userid
+            except NameError:
+                return redirect('/accessdenied')
+        try:
+            userid
+        except NameError:
+            return redirect('/accessdenied')
+        date = request.form['date'].strip()
+        renew_date = request.form['date-renew'].strip()
+        category = document['category']
+        descriptor = document['descriptor']
+        preamble = document['preamble']
+        content = document['content']
+        version = request.form['version']
+        version = str(int(version) + 1)
+        dict_to_store = {'title':title,'date':date,'date-renew':renew_date,'category':category,'descriptor':descriptor,'preamble':preamble,'content':content,'version':version,'userid':userid}
+        filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
+        pickle.dump(dict_to_store,open(filename,"wb"))
+        filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
+        return render_template('new_document_submitted.html',filename=str(filename),title=title,old_versions=False)
 
 @app.route("/document/new/<name>/", methods=['GET','POST'])
 def document_new(name):
     if request.method == 'GET':
         if name == 'json':
             return redirect('/')
-        return render_template('new_document.html',title="New Document")
+        return render_template('new_document.html',title="New Document",old_versions=False)
     if request.method == 'POST':
         doccu_home = expanduser('~/.doccu')
         identifier = request.form['identifier']
         auth_db = pickle.load(open(doccu_home + "/ids.dbs", "rb"))
-        if identifier not in auth_db.values():
+
+        for key in auth_db.keys():
+            if str(identifier) == str(auth_db[key]['key']):
+                if auth_db[key]['group'] == 'superadmin':
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
+                elif auth_db[key]['group'] == 'admin':
+                    userid = str(key) + ' (' + str(auth_db[key]['group']) + ')'
+        try:
+            userid
+        except NameError:
             return redirect('/accessdenied')
-        if str(identifier) == '000000':
-            return redirect('/accessdenied')
-        for key, value in auth_db.items():
-            if identifier in value:
-                userid = key
+
         title = request.form['title'].strip()
         categories = request.form['category']
         category = categories.split(',')
@@ -240,8 +459,13 @@ def document_new(name):
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
         pickle.dump(dict_to_store,open(filename,"wb"))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
-        print(filename)
-        return render_template('new_document_submitted.html',title=title,filename=str(filename))
+        ip_address = get_ip_address()
+        for key in auth_db.keys():
+            if str(auth_db[key]['group']) == 'admin':
+                sendmail.send_email(str(auth_db[key]['email']),str(key).upper(),'New Document awaiting approval: [' + name + '](http://' + ip_address + '/document/' + name + ')')
+            elif str(auth_db[key]['group']) == 'superadmin':
+                sendmail.send_email(str(auth_db[key]['email']),str(key).upper(),'New Document awaiting approval: [' + name + '](http://' + ip_address + '/document/' + name + ')')
+        return render_template('new_document_submitted.html',title=title,filename=str(filename),old_versions=False)
 
 if __name__ == "__main__":
     logging.basicConfig(filename='error.log',level=logging.DEBUG)
