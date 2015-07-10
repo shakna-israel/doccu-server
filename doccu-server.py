@@ -103,9 +103,8 @@ def search():
         elif (category and title):
             both_titles_and_authors = False
             author_and_category = False
-            category_and_title = True
+            category_and_title = { 'list': titles_found, 'category': category}
             triple_filter = False
-            print("Not Yet Implemented")
 
         elif (author and category):
             both_titles_and_authors = False
@@ -118,7 +117,7 @@ def search():
             category_and_title = False
             triple_filter = False
 
-        return render_template('search_out.html',categories=categories_found,categories_search=searched_categories,titles_found=titles_found,titles_search=titles_search,authors_found=authors_found,search_author=search_author,title="Search",both_titles_and_authors=both_titles_and_authors,triple_filter=triple_filter,author_and_category=author_and_category)
+        return render_template('search_out.html',categories=categories_found,categories_search=searched_categories,titles_found=titles_found,titles_search=titles_search,authors_found=authors_found,search_author=search_author,title="Search",both_titles_and_authors=both_titles_and_authors,triple_filter=triple_filter,author_and_category=author_and_category,category_and_title=category_and_title)
 
 def search_categories(category):
     if category == '':
