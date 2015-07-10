@@ -69,8 +69,10 @@ def search():
         author = request.form['author']
         categories_found = search_categories(category)
         titles_found = search_titles(title)
+        authors_found = search_authors(author)['found']
+        search_author = search_authors(author)['search']
 
-        return render_template('search_out.html',categories=categories_found,titles_found=titles_found,title="Search")
+        return render_template('search_out.html',categories=categories_found,titles_found=titles_found,authors_found=authors_found,search_author=search_author,title="Search")
 
 def search_categories(category):
     if category == '':
@@ -107,9 +109,27 @@ def search_titles(title):
     titles_found = {}
     for database in databases:
         document = pickle.load(open(database, "rb"))
-        if title.lower() in document['title'].lower():
-            titles_found[document['title']] = { 'title': document['title'], 'version': document['version'] }
+        try:
+            if title.lower() in document['title'].lower():
+                titles_found[document['title']] = { 'title': document['title'], 'version': document['version'] }
+        except AttributeError:
+            titles_found = False
     return titles_found
+
+def search_authors(author):
+    if author == '':
+        author = False
+    doccu_docs = expanduser("~/.doccu/documents")
+    databases = glob.glob(doccu_docs + '/*.db')
+    authors_found = {}
+    for database in databases:
+        document = pickle.load(open(database, "rb"))
+        try:
+            if author.lower() in document['userid'].lower():
+                authors_found[document['title']] = { 'title': document['title'], 'version': document['version'] }
+        except AttributeError:
+            authors_found = False
+    return {'found':authors_found,'search':author}
 
 @app.route("/category/<name>/")
 def show_category(name):
