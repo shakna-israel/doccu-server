@@ -70,17 +70,42 @@ def search():
         search_for_categories = search_categories(category)
         categories_found = search_for_categories['found']
         search_categories_list = search_for_categories['search']
-        for item in search_categories_list:
-            try:
-                searched_categories = str(item).upper() + ', ' + searched_categories
-            except UnboundLocalError:
-                searched_categories = str(item).upper()
+        try:
+            for item in search_categories_list:
+                try:
+                    searched_categories = str(item).upper() + ', ' + searched_categories
+                except UnboundLocalError:
+                    searched_categories = str(item).upper()
+        except TypeError:
+            search_categories_list = False
+            searched_categories = False
         titles_found = search_titles(title)['found']
-        titles_search = search_titles(title)['search'].upper()
+        try:
+            titles_search = search_titles(title)['search'].upper()
+        except AttributeError:
+            titles_search = False
         authors_found = search_authors(author)['found']
-        search_author = search_authors(author)['search'].upper()
+        try:
+            search_author = search_authors(author)['search'].upper()
+        except AttributeError:
+            search_author = False
 
-        return render_template('search_out.html',categories=categories_found,categories_search=searched_categories,titles_found=titles_found,titles_search=titles_search,authors_found=authors_found,search_author=search_author,title="Search")
+        if author:
+            if title:
+                if category:
+                    both_titles_and_authors = False
+                    triple_filter = { 'list':list(set(titles_found).intersection(authors_found)), 'category':category}
+                else:
+                    both_titles_and_authors = list(set(titles_found).intersection(authors_found))
+                    triple_filter = False
+            else:
+                both_titles_and_authors = False
+                triple_filter = False
+        else:
+            both_titles_and_authors = False
+            triple_filter = False
+
+        return render_template('search_out.html',categories=categories_found,categories_search=searched_categories,titles_found=titles_found,titles_search=titles_search,authors_found=authors_found,search_author=search_author,title="Search",both_titles_and_authors=both_titles_and_authors,triple_filter=triple_filter)
 
 def search_categories(category):
     if category == '':
@@ -119,7 +144,7 @@ def search_titles(title):
         document = pickle.load(open(database, "rb"))
         try:
             if title.lower() in document['title'].lower():
-                titles_found[document['title']] = { 'title': document['title'], 'version': document['version'] }
+                titles_found[document['title']] = { 'title': document['title'], 'version': document['version'], 'category': document['category'] }
         except AttributeError:
             titles_found = False
     return {'found':titles_found,'search':title}
