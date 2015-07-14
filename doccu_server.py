@@ -17,6 +17,9 @@ import json
 if os.getenv('Doccu', 'Development') == 'Production':
     doccu_static = expanduser('~/.doccu/static')
     doccu_templates = expanduser('~/.doccu/templates')
+elif os.getenv('Travis') == 'true':
+    doccu_static = ('.doccu/static')
+    doccu_templates = ('.doccu/templates')
 else:
     doccu_static = expanduser('~/.doccu/static')
     doccu_templates = expanduser('~/doccu-templates')
@@ -30,7 +33,10 @@ app.jinja_loader = template_loader
 @app.route("/")
 @app.route("/<name>/")
 def home(name="None"):
-    doccu_docs = expanduser("~/.doccu/documents")
+    if os.getenv('Travis') == 'true':
+        doccu_docs = ('.doccu/documents')
+    else:
+        doccu_docs = expanduser("~/.doccu/documents")
     databases = glob.glob(doccu_docs + '/*.db')
     policy = {}
     for database in databases:
@@ -129,7 +135,10 @@ def search_categories(category):
     except TypeError:
         categories = False
 
-    doccu_docs = expanduser("~/.doccu/documents")
+    if os.getenv('Travis') == 'true':
+        doccu_docs = ".doccu/documents"
+    else:
+        doccu_docs = expanduser("~/.doccu/documents")
     databases = glob.glob(doccu_docs + '/*.db')
     categories_found = {}
     try:
@@ -146,7 +155,10 @@ def search_categories(category):
 def search_titles(title):
     if title == '':
         title = False
-    doccu_docs = expanduser("~/.doccu/documents")
+    if os.getenv('Travis') == 'true':
+        doccu_docs = '.doccu/documents'
+    else:
+        doccu_docs = expanduser("~/.doccu/documents")
     databases = glob.glob(doccu_docs + '/*.db')
     titles_found = {}
     for database in databases:
@@ -161,7 +173,10 @@ def search_titles(title):
 def search_authors(author):
     if author == '':
         author = False
-    doccu_docs = expanduser("~/.doccu/documents")
+    if os.getenv('Travis'):
+        doccu_docs = '.doccu/documents'
+    else:
+        doccu_docs = expanduser("~/.doccu/documents")
     databases = glob.glob(doccu_docs + '/*.db')
     authors_found = {}
     for database in databases:
@@ -182,7 +197,10 @@ def search_authors(author):
 
 @app.route("/category/<name>/")
 def show_category(name):
-    doccu_docs = expanduser("~/.doccu/documents")
+    if os.getenv('Travis') == 'true':
+        doccu_docs = '.doccu/documents'
+    else:
+        doccu_docs = expanduser("~/.doccu/documents")
     databases = glob.glob(doccu_docs + '/*.db')
     policy = {}
     for database in databases:
@@ -199,8 +217,12 @@ def show_category(name):
 
 @app.route("/document/<name>/")
 def document_fetch(name):
-    doccu_docs = expanduser('~/.doccu/documents')
-    doccu_img = expanduser("~/.doccu/static/img")
+    if os.getenv('Travis') == 'true':
+        doccu_docs = '.doccu/documents'
+        doccu_img = '.doccu/static/img'
+    else:
+        doccu_docs = expanduser('~/.doccu/documents')
+        doccu_img = expanduser("~/.doccu/static/img")
     document_name = doccu_docs + "/" + str(name) + ".db"
     unversioned_name = name.split('.', 1)[-1]
     old_versions_docs = sorted(glob.glob(doccu_docs + '/*' + unversioned_name + '*.db'))
@@ -274,7 +296,10 @@ def access_denied():
 @app.route("/document/<name>/edit/", methods=['GET','POST'])
 def document_edit(name):
     if request.method == 'GET':
-        doccu_docs = expanduser("~/.doccu/documents")
+        if os.getenv('Travis'):
+            doccu_docs = '.doccu/documents'
+        else:
+            doccu_docs = expanduser("~/.doccu/documents")
         document_name = doccu_docs + "/" + str(name) + ".db"
         try:
             document = json.load(open(document_name, "r"))
@@ -302,8 +327,12 @@ def document_edit(name):
             content_html = content_html + item + "\n"
         return render_template('edit_document.html',title=name,date=date,renew_date=renew_date,category=categories,descriptor=descriptor,preamble=preamble,content=content_html,version=version,old_versions=False)
     if request.method == 'POST':
-        doccu_home = expanduser('~/.doccu')
-        doccu_docs = expanduser('~/.doccu/documents')
+        if os.getenv('Travis'):
+            doccu_home = '.doccu'
+            doccu_docs = '.doccu/documents'
+        else:
+            doccu_home = expanduser('~/.doccu')
+            doccu_docs = expanduser('~/.doccu/documents')
         title = name
         title = title.split('.')[-1]
         title = title.replace("_"," ")
@@ -360,7 +389,10 @@ def document_edit(name):
 @app.route("/document/<name>/approve/", methods=['GET','POST'])
 def document_approve(name):
     if request.method == 'GET':
-        doccu_docs = expanduser("~/.doccu/documents")
+        if os.getenv('Travis') == 'true':
+            doccu_docs = '.doccu/documents'
+        else:
+            doccu_docs = expanduser("~/.doccu/documents")
         document_name = doccu_docs + "/" + str(name) + ".db"
         try:
             document = json.load(open(document_name, "r"))
@@ -378,8 +410,12 @@ def document_approve(name):
         version = str(name).split('.')[0]
         return render_template('approve_document.html',title=name,date=date,renew_date=renew_date,version=version,old_versions=False)
     if request.method == 'POST':
-        doccu_home = expanduser('~/.doccu')
-        doccu_docs = expanduser('~/.doccu/documents')
+        if os.getenv('Travis') == 'true':
+            doccu_home = '.doccu'
+            doccu_docs = '.doccu/documents'
+        else:
+            doccu_home = expanduser('~/.doccu')
+            doccu_docs = expanduser('~/.doccu/documents')
         document_name = doccu_docs + "/" + str(name) + ".db"
         try:
             document = json.load(open(document_name, "r"))
@@ -430,7 +466,10 @@ def document_new(name):
             return redirect('/')
         return render_template('new_document.html',title="New Document",old_versions=False)
     if request.method == 'POST':
-        doccu_home = expanduser('~/.doccu')
+        if os.getenv('Travis') == 'true':
+            doccu_home = '.doccu'
+        else:
+            doccu_home = expanduser('~/.doccu')
         identifier = request.form['identifier']
         auth_db = json.load(open(doccu_home + "/ids.dbs", "r"))
 
@@ -458,7 +497,10 @@ def document_new(name):
             line = line.replace('\r','')
             content.append(line)
         dict_to_store = {'title':title,'category':category,'descriptor':descriptor,'preamble':preamble,'content':content,'version':version,'userid':userid}
-        doccu_docs = expanduser("~/.doccu/documents")
+        if os.getenv('Travis') == 'true':
+            doccu_docs = '.doccu/documents'
+        else:
+            doccu_docs = expanduser("~/.doccu/documents")
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
         json.dump(dict_to_store,open(filename,"w+"),sort_keys=True, indent=4, separators=(',', ': '))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")

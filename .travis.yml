@@ -11,6 +11,7 @@ python:
  - "nightly" # CPython latest
 install:
   - "pip install -r requirements.txt"
-  - "mkdir ~/.doccu"
-  - "git clone https://github.com/shakna-israel/doccu-templates ~/.doccu/templates"
+  - "mkdir .doccu"
+  - "git clone https://github.com/shakna-israel/doccu-templates .doccu/templates"
+  - "python travis-static.py"
 script: "nosetests"
