@@ -12,10 +12,7 @@ import piedown
 import re
 import sendmail
 from lib import get_ip_address
-try:
-    import cpickle
-except ImportError:
-    import pickle
+import json
 
 if os.getenv('Doccu', 'Development') == 'Production':
     doccu_static = expanduser('~/.doccu/static')
@@ -37,7 +34,7 @@ def home(name="None"):
     databases = glob.glob(doccu_docs + '/*.db')
     policy = {}
     for database in databases:
-        document = pickle.load(open(database, "rb"))
+        document = json.load(open(database, "r"))
         database_url = str(database.replace(".db",'').replace(doccu_docs + '/',''))
         policy_title = document['title']
         try:
@@ -47,7 +44,7 @@ def home(name="None"):
             policy[policy_title] = {'title':policy_title, 'url': database_url, 'version': document['version']}
     categories = []
     for database in databases:
-        document = pickle.load(open(database, "rb"))
+        document = json.load(open(database, "r"))
         categories.extend(document['category'])
     categories = sorted(list(set(categories)))
     try:
@@ -138,7 +135,7 @@ def search_categories(category):
     try:
         for category in categories:
             for database in databases:
-                document = pickle.load(open(database, "rb"))
+                document = json.load(open(database, "r"))
                 for item in document['category']:
                     if category.lower() in item.lower():
                         categories_found[item] = item
@@ -153,7 +150,7 @@ def search_titles(title):
     databases = glob.glob(doccu_docs + '/*.db')
     titles_found = {}
     for database in databases:
-        document = pickle.load(open(database, "rb"))
+        document = json.load(open(database, "r"))
         try:
             if title.lower() in document['title'].lower():
                 titles_found[document['title']] = { 'title': document['title'], 'version': document['version'], 'category': document['category'] }
@@ -168,7 +165,7 @@ def search_authors(author):
     databases = glob.glob(doccu_docs + '/*.db')
     authors_found = {}
     for database in databases:
-        document = pickle.load(open(database, "rb"))
+        document = json.load(open(database, "r"))
         try:
             if author.lower() in document['userid'].lower():
                 try:
@@ -189,7 +186,7 @@ def show_category(name):
     databases = glob.glob(doccu_docs + '/*.db')
     policy = {}
     for database in databases:
-        document = pickle.load(open(database, "rb"))
+        document = json.load(open(database, "r"))
         if name in document['category']:
             policy_title = document['title']
             database_url = str(database.replace(".db",'').replace(doccu_docs + '/',''))
@@ -227,7 +224,7 @@ def document_fetch(name):
     else:
         logo_base64 = False
     try:
-        document = pickle.load(open(document_name, "rb"))
+        document = json.load(open(document_name, "r"))
     except IOError:
         return redirect('/')
     title = document['title']
@@ -280,7 +277,7 @@ def document_edit(name):
         doccu_docs = expanduser("~/.doccu/documents")
         document_name = doccu_docs + "/" + str(name) + ".db"
         try:
-            document = pickle.load(open(document_name, "rb"))
+            document = json.load(open(document_name, "r"))
         except IOError:
             return redirect('/')
         title = document['title']
@@ -311,7 +308,7 @@ def document_edit(name):
         title = title.split('.')[-1]
         title = title.replace("_"," ")
         identifier = request.form['identifier']
-        auth_db = pickle.load(open(doccu_home + "/ids.dbs", "rb"))
+        auth_db = json.load(open(doccu_home + "/ids.dbs", "r"))
 
         for key in auth_db.keys():
             if str(identifier) == str(auth_db[key]['key']):
@@ -350,7 +347,7 @@ def document_edit(name):
             content.append(line)
         dict_to_store = {'title':title,'date':date,'date-renew':renew_date,'category':category,'descriptor':descriptor,'preamble':preamble,'content':content,'version':version,'userid':userid}
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
-        pickle.dump(dict_to_store,open(filename,"wb"))
+        json.dump(dict_to_store,open(filename,"w+"))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
         ip_address = get_ip_address()
         for key in auth_db.keys():
@@ -366,7 +363,7 @@ def document_approve(name):
         doccu_docs = expanduser("~/.doccu/documents")
         document_name = doccu_docs + "/" + str(name) + ".db"
         try:
-            document = pickle.load(open(document_name, "rb"))
+            document = json.load(open(document_name, "r"))
         except IOError:
             return redirect('/')
         title = document['title']
@@ -385,14 +382,14 @@ def document_approve(name):
         doccu_docs = expanduser('~/.doccu/documents')
         document_name = doccu_docs + "/" + str(name) + ".db"
         try:
-            document = pickle.load(open(document_name, "rb"))
+            document = json.load(open(document_name, "r"))
         except IOError:
             return redirect('/')
         title = name
         title = title.split('.')[-1]
         title = title.replace("_"," ")
         identifier = request.form['identifier']
-        auth_db = pickle.load(open(doccu_home + "/ids.dbs", "rb"))
+        auth_db = json.load(open(doccu_home + "/ids.dbs", "r"))
         for key in auth_db.keys():
             if str(identifier) == str(auth_db[key]['key']):
                 if auth_db[key]['group'] == 'superadmin':
@@ -422,7 +419,7 @@ def document_approve(name):
         version = str(int(version) + 1)
         dict_to_store = {'title':title,'date':date,'date-renew':renew_date,'category':category,'descriptor':descriptor,'preamble':preamble,'content':content,'version':version,'userid':userid}
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
-        pickle.dump(dict_to_store,open(filename,"wb"))
+        json.dump(dict_to_store,open(filename,"w+"))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
         return render_template('new_document_submitted.html',filename=str(filename),title=title,old_versions=False)
 
@@ -435,7 +432,7 @@ def document_new(name):
     if request.method == 'POST':
         doccu_home = expanduser('~/.doccu')
         identifier = request.form['identifier']
-        auth_db = pickle.load(open(doccu_home + "/ids.dbs", "rb"))
+        auth_db = json.load(open(doccu_home + "/ids.dbs", "r"))
 
         for key in auth_db.keys():
             if str(identifier) == str(auth_db[key]['key']):
@@ -463,7 +460,7 @@ def document_new(name):
         dict_to_store = {'title':title,'category':category,'descriptor':descriptor,'preamble':preamble,'content':content,'version':version,'userid':userid}
         doccu_docs = expanduser("~/.doccu/documents")
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
-        pickle.dump(dict_to_store,open(filename,"wb"))
+        json.dump(dict_to_store,open(filename,"w+"))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
         ip_address = get_ip_address()
         for key in auth_db.keys():
