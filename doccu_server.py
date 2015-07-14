@@ -17,7 +17,7 @@ import json
 if os.getenv('Doccu', 'Development') == 'Production':
     doccu_static = expanduser('~/.doccu/static')
     doccu_templates = expanduser('~/.doccu/templates')
-elif os.getenv('Travis') == 'true':
+elif os.getenv('TRAVIS') == 'true':
     doccu_static = ('.doccu/static')
     doccu_templates = ('.doccu/templates')
 else:
@@ -33,7 +33,7 @@ app.jinja_loader = template_loader
 @app.route("/")
 @app.route("/<name>/")
 def home(name="None"):
-    if os.getenv('Travis') == 'true':
+    if os.getenv('TRAVIS') == 'true':
         doccu_docs = ('.doccu/documents')
     else:
         doccu_docs = expanduser("~/.doccu/documents")
@@ -135,7 +135,7 @@ def search_categories(category):
     except TypeError:
         categories = False
 
-    if os.getenv('Travis') == 'true':
+    if os.getenv('TRAVIS') == 'true':
         doccu_docs = ".doccu/documents"
     else:
         doccu_docs = expanduser("~/.doccu/documents")
@@ -155,7 +155,7 @@ def search_categories(category):
 def search_titles(title):
     if title == '':
         title = False
-    if os.getenv('Travis') == 'true':
+    if os.getenv('TRAVIS') == 'true':
         doccu_docs = '.doccu/documents'
     else:
         doccu_docs = expanduser("~/.doccu/documents")
@@ -173,7 +173,7 @@ def search_titles(title):
 def search_authors(author):
     if author == '':
         author = False
-    if os.getenv('Travis'):
+    if os.getenv('TRAVIS'):
         doccu_docs = '.doccu/documents'
     else:
         doccu_docs = expanduser("~/.doccu/documents")
@@ -197,7 +197,7 @@ def search_authors(author):
 
 @app.route("/category/<name>/")
 def show_category(name):
-    if os.getenv('Travis') == 'true':
+    if os.getenv('TRAVIS') == 'true':
         doccu_docs = '.doccu/documents'
     else:
         doccu_docs = expanduser("~/.doccu/documents")
@@ -217,7 +217,7 @@ def show_category(name):
 
 @app.route("/document/<name>/")
 def document_fetch(name):
-    if os.getenv('Travis') == 'true':
+    if os.getenv('TRAVIS') == 'true':
         doccu_docs = '.doccu/documents'
         doccu_img = '.doccu/static/img'
     else:
@@ -296,7 +296,7 @@ def access_denied():
 @app.route("/document/<name>/edit/", methods=['GET','POST'])
 def document_edit(name):
     if request.method == 'GET':
-        if os.getenv('Travis'):
+        if os.getenv('TRAVIS'):
             doccu_docs = '.doccu/documents'
         else:
             doccu_docs = expanduser("~/.doccu/documents")
@@ -327,7 +327,7 @@ def document_edit(name):
             content_html = content_html + item + "\n"
         return render_template('edit_document.html',title=name,date=date,renew_date=renew_date,category=categories,descriptor=descriptor,preamble=preamble,content=content_html,version=version,old_versions=False)
     if request.method == 'POST':
-        if os.getenv('Travis'):
+        if os.getenv('TRAVIS'):
             doccu_home = '.doccu'
             doccu_docs = '.doccu/documents'
         else:
@@ -389,7 +389,7 @@ def document_edit(name):
 @app.route("/document/<name>/approve/", methods=['GET','POST'])
 def document_approve(name):
     if request.method == 'GET':
-        if os.getenv('Travis') == 'true':
+        if os.getenv('TRAVIS') == 'true':
             doccu_docs = '.doccu/documents'
         else:
             doccu_docs = expanduser("~/.doccu/documents")
@@ -410,7 +410,7 @@ def document_approve(name):
         version = str(name).split('.')[0]
         return render_template('approve_document.html',title=name,date=date,renew_date=renew_date,version=version,old_versions=False)
     if request.method == 'POST':
-        if os.getenv('Travis') == 'true':
+        if os.getenv('TRAVIS') == 'true':
             doccu_home = '.doccu'
             doccu_docs = '.doccu/documents'
         else:
@@ -466,7 +466,7 @@ def document_new(name):
             return redirect('/')
         return render_template('new_document.html',title="New Document",old_versions=False)
     if request.method == 'POST':
-        if os.getenv('Travis') == 'true':
+        if os.getenv('TRAVIS') == 'true':
             doccu_home = '.doccu'
         else:
             doccu_home = expanduser('~/.doccu')
@@ -497,7 +497,7 @@ def document_new(name):
             line = line.replace('\r','')
             content.append(line)
         dict_to_store = {'title':title,'category':category,'descriptor':descriptor,'preamble':preamble,'content':content,'version':version,'userid':userid}
-        if os.getenv('Travis') == 'true':
+        if os.getenv('TRAVIS') == 'true':
             doccu_docs = '.doccu/documents'
         else:
             doccu_docs = expanduser("~/.doccu/documents")
