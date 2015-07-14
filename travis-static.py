@@ -14,6 +14,8 @@ download_file('https://raw.githubusercontent.com/bpampuch/pdfmake/master/build/v
 
 import os
 
+print(os.getenv('Travis'))
+
 for dirname, dirnames, filenames in os.walk('.'):
     # print path to all subdirectories first.
     for subdirname in dirnames:
