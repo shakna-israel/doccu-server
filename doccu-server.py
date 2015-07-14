@@ -347,7 +347,7 @@ def document_edit(name):
             content.append(line)
         dict_to_store = {'title':title,'date':date,'date-renew':renew_date,'category':category,'descriptor':descriptor,'preamble':preamble,'content':content,'version':version,'userid':userid}
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
-        json.dump(dict_to_store,open(filename,"w+"))
+        json.dump(dict_to_store,open(filename,"w+"), sort_keys=True, indent=4, separators=(',', ': '))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
         ip_address = get_ip_address()
         for key in auth_db.keys():
@@ -419,7 +419,7 @@ def document_approve(name):
         version = str(int(version) + 1)
         dict_to_store = {'title':title,'date':date,'date-renew':renew_date,'category':category,'descriptor':descriptor,'preamble':preamble,'content':content,'version':version,'userid':userid}
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
-        json.dump(dict_to_store,open(filename,"w+"))
+        json.dump(dict_to_store,open(filename,"w+"), sort_keys=True, indent=4, separators=(',', ': '))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
         return render_template('new_document_submitted.html',filename=str(filename),title=title,old_versions=False)
 
@@ -460,7 +460,7 @@ def document_new(name):
         dict_to_store = {'title':title,'category':category,'descriptor':descriptor,'preamble':preamble,'content':content,'version':version,'userid':userid}
         doccu_docs = expanduser("~/.doccu/documents")
         filename = doccu_docs + "/" + str(version) + "." + str(title).replace(" ", "_") + ".db"
-        json.dump(dict_to_store,open(filename,"w+"))
+        json.dump(dict_to_store,open(filename,"w+"),sort_keys=True, indent=4, separators=(',', ': '))
         filename = filename.replace(".db",'').replace(doccu_docs,"").replace("/","")
         ip_address = get_ip_address()
         for key in auth_db.keys():
