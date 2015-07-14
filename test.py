@@ -10,6 +10,11 @@ class MyAppTestCase(unittest.TestCase):
         rv = self.app.get('/')
         self.assertIn('<title>Doccu - Home</title>'.encode('utf-8'), rv.data)
 
+    def test_redirect_home(self):
+        """Test that /UNKNOWN will redirect to the home page."""
+        rv = self.app.get('/anything')
+        self.assertIn('<title>Doccu - Home</title>'.encode('utf-8'), rv.data)
+
     def test_home_search(self):
         """Test that the homepage has a search function"""
         rv = self.app.get('/')
