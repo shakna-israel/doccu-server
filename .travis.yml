@@ -1,18 +1,14 @@
 language: python
 python:
- - "2.6"
  - "2.7"
- - "3.2"
  - "3.3"
- - "3.2"
  - "3.4"
- - "pypy"
- - "pypy3"
  - "nightly" # CPython latest
 install:
   - "pip install -r requirements.txt"
   - "mkdir -p .doccu/static/js"
   - "mkdir -p .doccu/static/img"
+  - "mkdir -p .doccu/documents"
   - "git clone https://github.com/shakna-israel/doccu-templates .doccu/templates"
-  - "python travis-static.py"
+  - "python travis-setup.py"
 script: "nosetests"
