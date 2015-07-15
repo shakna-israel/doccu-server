@@ -47,15 +47,15 @@ class MyAppTestCase(unittest.TestCase):
         rv = self.app.get('/search/')
         self.assertIn('<form action="/search/" method="POST">'.encode('utf-8'), rv.data)
 
-    def test_search_submit(self):
-        """Test that the search page is useable"""
-        rv = self.app.post('/search/',data={'category':'testing','title':'','author':''})
-        self.assertIn('<h3>Categories Found for TESTING:</h3>'.encode('utf-8'), rv.data)
-
     def test_new_document(self):
         """Test that you can create a new document"""
         rv = self.app.post('/document/new/new/', data = {'title':'Automated Test','category':'testing','descriptor':'This is an automated testing procedure.','preamble':'This is an automated testing procedure','document-proper':'This is n automated testing procedure','identifier':'223344997766551100'})
         self.assertIn('Form submitted for'.encode('utf-8'), rv.data)
+
+    def test_search_submit(self):
+        """Test that the search page is useable"""
+        rv = self.app.post('/search/',data={'category':'testing','title':'','author':''})
+        self.assertIn('<h3>Categories Found for TESTING:</h3>'.encode('utf-8'), rv.data)
 
     def test_read_document(self):
         """Test that you can read a document"""
