@@ -24,39 +24,39 @@ class MyAppTestCase(unittest.TestCase):
     def test_home_title(self):
         """Test that the homepage calls itself Doccu - Home"""
         rv = self.app.get('/')
-        self.assertIn('<title>Doccu - Home</title>'.encode('utf-8'), rv.data.decode('utf-8'))
+        self.assertIn('<title>Doccu - Home</title>'.encode('utf-8'), rv.data)
 
     def test_home_search(self):
         """Test that the homepage has a search function"""
         rv = self.app.get('/')
-        self.assertIn('<form action="/search/" method="POST">'.encode('utf-8'), rv.data.decode('utf-8'))
+        self.assertIn('<form action="/search/" method="POST">'.encode('utf-8'), rv.data)
 
     def test_home_categories(self):
         """Test that the homepage lists categories"""
         rv = self.app.get('/')
-        self.assertIn('<h1>Categories:</h1>'.encode('utf-8'), rv.data.decode('utf-8'))
+        self.assertIn('<h1>Categories:</h1>'.encode('utf-8'), rv.data)
 
     def test_search_page(self):
         """Test that the search page is accessible"""
         rv = self.app.get('/search/')
-        self.assertIn('<form action="/search/" method="POST">'.encode('utf-8'), rv.data.decode('utf-8'))
+        self.assertIn('<form action="/search/" method="POST">'.encode('utf-8'), rv.data)
 
     def test_new_document(self):
         """Test that you can create a new document"""
         rv = self.app.post('/document/new/new/', data = {'title':'Automated Test','category':'testing','descriptor':'This is an automated testing procedure.','preamble':'This is an automated testing procedure','document-proper':'This is n automated testing procedure','identifier':'223344997766551100'})
-        self.assertIn('Form submitted for'.encode('utf-8'), rv.data.decode('utf-8'))
+        self.assertIn('Form submitted for'.encode('utf-8'), rv.data)
 
     def test_search_submit(self):
         """Test that the search page is useable"""
         self.app.post('/document/new/new/', data = {'title':'Automated Test','category':'testing','descriptor':'This is an automated testing procedure.','preamble':'This is an automated testing procedure','document-proper':'This is n automated testing procedure','identifier':'223344997766551100'})
         rv = self.app.post('/search/',data={'category':'testing','title':'','author':''})
-        self.assertIn('<h3>Categories Found for TESTING:</h3>'.encode('utf-8'), rv.data.decode('utf-8'))
+        self.assertIn('<h3>Categories Found for TESTING:</h3>'.encode('utf-8'), rv.data)
 
     def test_read_document(self):
         """Test that you can read a document"""
         self.app.post('/document/new/new/', data = {'title':'Automated Test','category':'testing','descriptor':'This is an automated testing procedure.','preamble':'This is an automated testing procedure','document-proper':'This is n automated testing procedure','identifier':'223344997766551100'})
         rv = self.app.get('document/0.Automated_Test/')
-        self.assertIn('<h2>Document: Automated Test</h2>'.encode('utf-8'), rv.data.decode('utf-8'))
+        self.assertIn('<h2>Document: Automated Test</h2>'.encode('utf-8'), rv.data)
 
     def test_read_document_markdown(self):
         """Test that Markdown turns into HTML correctly"""
@@ -74,7 +74,7 @@ class MyAppTestCase(unittest.TestCase):
         """Test that documents expire correctly"""
         self.app.post('document/0.Automated_Test/approve/', data={'version':'0','date':'1992-08-08','date-renew':'1993-08-08','identifier':'223344997766551100'})
         rq = self.app.get('/document/0.Automated_Test/')
-        self.assertIn('not active', rq.data)
+        self.assertIn('not active', rq.data.decode('utf-8'))
 
     def test_piedown(self):
         """Test the Piedown renders Markdown into HTML correctly"""
