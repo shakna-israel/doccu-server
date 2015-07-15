@@ -107,7 +107,7 @@ class MyAppTestCase(unittest.TestCase):
     def test_access_denied(self):
         """Test that the access denied page is accessible"""
         rv = self.app.get('/accessdenied')
-        self.assertIn('Access Denied', str(rv.data).decode('utf-8'))
+        self.assertIn('Access Denied', str(rv.data))
 
     def test_access_denied_edit(self):
         """Test that editing a page without the correct ID fails"""
