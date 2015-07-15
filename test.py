@@ -9,7 +9,7 @@ class MyAppTestCase(unittest.TestCase):
 
     def test_travis_setup_exists(self):
         """Test that Travis CI's setup file exists"""
-        if os.path.isfile('travis-static.py'):
+        if os.path.isfile('travis-setup.py'):
             pass
         else:
             assert False
@@ -69,7 +69,9 @@ class MyAppTestCase(unittest.TestCase):
 
     def test_expire_check_document(self):
         """Test that documents expire correctly"""
-        assert False
+        self.app.post('document/0.Automated_Test/approve/', data={'version':'0','date':'1992-08-08','date-renew':'1993-08-08','identifier':'223344997766551100'})
+        rq = self.app.get('/document/0.Automated_Test/')
+        self.assertIn('not active', rq.data)
 
     def test_piedown(self):
         """Test the Piedown renders Markdown into HTML correctly"""
