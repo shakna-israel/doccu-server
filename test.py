@@ -1,6 +1,7 @@
 import unittest
 import os
 import doccu_server as doccu
+import piedown
 
 class MyAppTestCase(unittest.TestCase):
     def setUp(self):
@@ -75,7 +76,26 @@ class MyAppTestCase(unittest.TestCase):
 
     def test_piedown(self):
         """Test the Piedown renders Markdown into HTML correctly"""
-        assert False
+        if piedown.render('#Title') == '<h1>Title</h1>':
+            if piedown.render('##Subtitle') == '<h2>Subtitle</h2>':
+                if piedown.render('###Tagline') == '<h3>Tagline</h3>':
+                    if piedown.render('*Italic*') == '<p><em>Italic</em></p>':
+                        if piedown.render('**Bold**') == '<p><strong>Bold</strong></p>':
+                            if piedown.render('***Both italic and bold***') == '<p><strong><em>Both italic and bold</strong></em></p>':
+                                if piedown.render('* Bullet point') == '<ul>\n<li>Bullet point</li>\n</ul>':
+                                    pass
+                            else:
+                                assert False
+                        else:
+                            assert False
+                    else:
+                        assert False
+                else:
+                    assert False
+            else:
+                assert False
+        else:
+            assert False
 
     def test_view_category(self):
         """Test that Categories display their contents correctly"""
