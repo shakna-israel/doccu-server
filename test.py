@@ -108,15 +108,18 @@ class MyAppTestCase(unittest.TestCase):
 
     def test_access_denied_edit(self):
         """Test that editing a page without the correct ID fails"""
-        assert False
+        rv = self.app.post('/document/0.Automated_Test/edit/', data = {'title':'Automated Test','category':'testing','descriptor':'This is an automated testing procedure.','preamble':'This is an automated testing procedure','document-proper':'This is n automated testing procedure','identifier':'0000'})
+        self.assertIn('accessdenied', rv.data)
 
     def test_access_denied_approve(self):
         """Test that approving a page without the correct ID fails"""
-        assert False
+        rv = self.app.post('/document/0.Automated_Test/approve/', data={'version':'0','date':'2020-08-08','date-renew':'2021-08-08','identifier':'0000'})
+        self.assertIn('accessdenied', rv.data)
 
     def test_access_denied_create(self):
         """Test that creating a new document without the correct ID fails"""
-        assert False
+        rv = self.app.post('/document/new/new/', data = {'title':'Automated Test','category':'testing','descriptor':'This is an automated testing procedure.','preamble':'This is an automated testing procedure','document-proper':'This is n automated testing procedure','identifier':'0000'})
+        self.assertIn('accessdenied', rv.data)
 
     def test_log_exists(self):
         """Test that the log file is correctly created"""
