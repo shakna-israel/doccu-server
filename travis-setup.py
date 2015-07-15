@@ -14,7 +14,7 @@ def download_static():
 	download_file('https://raw.githubusercontent.com/bpampuch/pdfmake/master/build/pdfmake.min.js', '.doccu/static/js/pdfmake.min.js')
 	download_file('https://raw.githubusercontent.com/bpampuch/pdfmake/master/build/vfs_fonts.js', '.doccu/static/js/vfs_fonts.js')
 
-def generate ids():
+def generate_ids():
 	ids = {}
 	ids['testing-bot'] = {}
 	ids['testing-bot']['key'] = '223344997766551100'
