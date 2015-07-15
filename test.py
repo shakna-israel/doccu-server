@@ -48,11 +48,13 @@ class MyAppTestCase(unittest.TestCase):
 
     def test_search_submit(self):
         """Test that the search page is useable"""
+        self.app.post('/document/new/new/', data = {'title':'Automated Test','category':'testing','descriptor':'This is an automated testing procedure.','preamble':'This is an automated testing procedure','document-proper':'This is n automated testing procedure','identifier':'223344997766551100'})
         rv = self.app.post('/search/',data={'category':'testing','title':'','author':''})
         self.assertIn('<h3>Categories Found for TESTING:</h3>'.encode('utf-8'), rv.data)
 
     def test_read_document(self):
         """Test that you can read a document"""
+        self.app.post('/document/new/new/', data = {'title':'Automated Test','category':'testing','descriptor':'This is an automated testing procedure.','preamble':'This is an automated testing procedure','document-proper':'This is n automated testing procedure','identifier':'223344997766551100'})
         rv = self.app.get('document/0.Automated_Test/')
         self.assertIn('<h2>Document: Automated Test</h2>'.encode('utf-8'), rv.data)
 
@@ -64,6 +66,7 @@ class MyAppTestCase(unittest.TestCase):
 
     def test_approve_document(self):
         """Test that you can approve a document"""
+        self.app.post('/document/new/new/', data = {'title':'Automated Test','category':'testing','descriptor':'This is an automated testing procedure.','preamble':'This is an automated testing procedure','document-proper':'This is n automated testing procedure','identifier':'223344997766551100'})
         rv = self.app.post('document/0.Automated_Test/approve/', data={'version':'0','date':'2020-08-08','date-renew':'2021-08-08','identifier':'223344997766551100'})
         self.assertIn('Form submitted for', rv.data)
 
