@@ -64,7 +64,8 @@ class MyAppTestCase(unittest.TestCase):
 
     def test_approve_document(self):
         """Test that you can approve a document"""
-        assert False
+        rv = self.app.post('document/0.Automated_Test/approve/', data={'version':'0','date':'2020-08-08','date-renew':'2021-08-08','identifier':'223344997766551100'})
+        self.assertIn('Form submitted for', rv.data)
 
     def test_expire_check_document(self):
         """Test that documents expire correctly"""
@@ -95,7 +96,8 @@ class MyAppTestCase(unittest.TestCase):
 
     def test_view_category(self):
         """Test that Categories display their contents correctly"""
-        assert False
+        rv = self.app.get('category/testing/')
+        self.assertIn('<li>', rv.data)
 
     def test_access_denied(self):
         """Test that the access denied page is accessible"""
