@@ -6,13 +6,6 @@ class MyAppTestCase(unittest.TestCase):
     def setUp(self):
         self.app = doccu.app.test_client()
 
-    def test_travis_configuration_exists(self):
-        """Test that Travis CI's configuration file exists"""
-        if os.path.isfile('.travis.yml'):
-            pass
-        else:
-            assert False
-
     def test_travis_setup_exists(self):
         """Test that Travis CI's setup file exists"""
         if os.path.isfile('travis-static.py'):
