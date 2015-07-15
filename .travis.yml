@@ -14,5 +14,5 @@ install:
   - "mkdir -p .doccu/static/js"
   - "mkdir -p .doccu/static/img"
   - "git clone https://github.com/shakna-israel/doccu-templates .doccu/templates"
-  - "python travis-static.py"
+  - "python travis-setup.py"
 script: "nosetests"
