@@ -70,10 +70,6 @@ class MyAppTestCase(unittest.TestCase):
         """Test that documents expire correctly"""
         assert False
 
-    def test_sendmail_new(self):
-        """Test that emails are sent at document creation"""
-        assert False
-
     def test_piedown(self):
         """Test the Piedown renders Markdown into HTML correctly"""
         if piedown.render('#Title') == '<h1>Title</h1>':
