@@ -57,7 +57,9 @@ class MyAppTestCase(unittest.TestCase):
 
     def test_read_document_markdown(self):
         """Test that Markdown turns into HTML correctly"""
-        assert False
+        self.app.post('/document/new/new/', data = {'title':'Automated Markdown Test','category':'testing','descriptor':'This is an automated testing procedure.','preamble':'This is an automated testing procedure','document-proper':'# Title\n\n##Subtitle\n\n###Tagline\n\n* Bullet point\n\n*Italic*\n\n**Bold**\n\n***Both italic and bold***','identifier':'223344997766551100'})
+        rv = self.app.get('/document/0.Automated_Markdown_Test/')
+        self.assertIn('<h3>Document Proper:</h3>\n<h1>Title</h1>\n<h2>Subtitle</h2>\n<h3>Tagline</h3>\n<ul>\n<li>Bullet point</li>\n</ul>\n<p><em>Italic</em></p>\n<p><strong>Bold</strong></p>\n<p><strong><em>Both italic and bold</em></strong></p>', rv.data)
 
     def test_approve_document(self):
         """Test that you can approve a document"""
